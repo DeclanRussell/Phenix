@@ -4,9 +4,14 @@
   <img src="https://github.com/DeclanRussell/Phenix/blob/master/images/phenix_red.png" alt="PhenixLogo"/>
 </p>
 
-Phenix is an open source reat time path tracer built upon Nvidias OptiX API.
+## What is Phenix
+
+Phenix is an open source real time path tracer built upon Nvidias OptiX API.
 Primarily I am creating this to serve as a testbed for future research but will keep a clean
-and maintained version for public consumption.
+and maintained version for public consumption. Its name "Phenix" was chosen because to begin
+this project I scavenged what I could from a previous project "Helios". However Helios has
+some very ugly code to say the least as we made with under a short deadline. Therefore Phenix
+is metaphorically burning this old ugly code and rising majestically from its ashes.
 
 ## TODO
 1. Inspector menu - to maintian a list of scene objects
