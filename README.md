@@ -1,9 +1,9 @@
 # Phenix
 
 <p align="center">
-  <imgsrc="https://github.com/DeclanRussell/Phenix/blob/master/images/phenix_red.png?raw=true" alt="Phenix Logo"/>
+  <imgsrc="https://github.com/DeclanRussell/Phenix/blob/master/images/phenix_red.png" alt="PhenixLogo"/>
 </p>
-![alt tag](Phenix Logo)
+![alt tag](PhenixLogo)
 
 Phenix is an open source reat time path tracer built upon Nvidias OptiX API.
 Primarily I am creating this to serve as a testbed for future research but will keep a clean
