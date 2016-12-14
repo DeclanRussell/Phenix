@@ -1,0 +1,87 @@
+#include "Light.h"
+#include "PathTracerCore.h"
+//----------------------------------------------------------------------------------------------------------------------
+Light::Light()
+{
+    std::string ptx_path = "ptx/path_tracer.cu.ptx";
+    m_lightMaterial = PathTracerScene::getInstance()->getContext()->createMaterial();
+    optix::Program diffuse_em = PathTracerScene::getInstance()->getContext()->createProgramFromPTXFile( ptx_path, "diffuseEmitter" );
+    m_lightMaterial->setClosestHitProgram( 0, diffuse_em );
+
+    // Set up our intersection programs
+    ptx_path = "ptx/parallelogram.cu.ptx";
+    m_pgram_bounding_box = PathTracerScene::getInstance()->getContext()->createProgramFromPTXFile( ptx_path, "bounds" );
+    m_pgram_intersection = PathTracerScene::getInstance()->getContext()->createProgramFromPTXFile( ptx_path, "intersect" );
+
+    // identity matrix to init our transformation
+    float m[16];
+    m[ 0] = 1.0f;  m[ 1] = 0.0f;  m[ 2] = 0.0f;  m[ 3] = 0.0f;
+    m[ 4] = 0.0f;  m[ 5] = 1.0f;  m[ 6] = 0.0f;  m[ 7] = 0.0f;
+    m[ 8] = 0.0f;  m[ 9] = 0.0f;  m[10] = 1.0f;  m[11] = 0.0f;
+    m[12] = 0.0f;  m[13] = 0.0f;  m[14] = 0.0f;  m[15] = 1.0f;
+    m_trans = PathTracerScene::getInstance()->getContext()->createTransform();
+    m_trans->setMatrix(false, m, 0);
+
+    createParollelogramLight();
+
+}
+//----------------------------------------------------------------------------------------------------------------------
+Light::~Light()
+{
+
+}
+//----------------------------------------------------------------------------------------------------------------------
+optix::GeometryInstance Light::createParallelogram(const float3 &_point1, const float3 &_point2, const float3 &_point3)
+{
+    optix::Geometry parallelogram = PathTracerScene::getInstance()->getContext()->createGeometry();
+    parallelogram->setPrimitiveCount( 1u );
+    parallelogram->setIntersectionProgram( m_pgram_intersection );
+    parallelogram->setBoundingBoxProgram( m_pgram_bounding_box );
+
+    float3 offset1 = _point2 - _point1;
+    float3 offset2 = _point3 - _point1;
+    float3 normal = normalize( cross( offset1, offset2 ) );
+    float d = dot( normal, _point1 );
+    float4 plane = optix::make_float4( normal, d );
+
+    float3 v1 = offset1 / dot( offset1, offset1 );
+    float3 v2 = offset2 / dot( offset2, offset2 );
+
+    parallelogram["plane"]->setFloat( plane );
+    parallelogram["anchor"]->setFloat( _point1 );
+    parallelogram["v1"]->setFloat( v1 );
+    parallelogram["v2"]->setFloat( v2 );
+
+    optix::GeometryInstance gi = PathTracerScene::getInstance()->getContext()->createGeometryInstance();
+    gi->setGeometry(parallelogram);
+    return gi;
+}
+//----------------------------------------------------------------------------------------------------------------------
+void Light::createParollelogramLight()
+{
+    m_parallelogramLight.corner = optix::make_float3(0.5, 0.0, -0.5);
+    m_parallelogramLight.v1 = optix::make_float3(-1.0, 0.0, 0.0);
+    m_parallelogramLight.v2 = optix::make_float3(0.0, 0.0, 1.0);
+    m_parallelogramLight.normal = normalize(cross(m_parallelogramLight.v1, m_parallelogramLight.v2));
+    m_parallelogramLight.emission = optix::make_float3(5.0, 5.0, 5.0);
+
+    float3 point1 = m_parallelogramLight.corner;
+    float3 point2 = m_parallelogramLight.corner + m_parallelogramLight.v1;
+    float3 point3 = m_parallelogramLight.corner + m_parallelogramLight.v2;
+    m_geometryInstance = createParallelogram(point1, point2, point3);
+    m_geometryInstance->addMaterial(m_lightMaterial);
+    m_geometryInstance["emission_color"]->setFloat(5.0, 5.0, 5.0);
+
+    m_geometryGroup = PathTracerScene::getInstance()->getContext()->createGeometryGroup();
+    m_geometryGroup->setChildCount(1);
+    m_geometryGroup->setChild(0, m_geometryInstance);
+
+    m_acceleration = PathTracerScene::getInstance()->getContext()->createAcceleration("Sbvh", "Bvh");
+    m_geometryGroup->setAcceleration(m_acceleration);
+
+    m_acceleration->markDirty();
+
+    m_trans->setChild(m_geometryGroup);
+}
+//----------------------------------------------------------------------------------------------------------------------
+
