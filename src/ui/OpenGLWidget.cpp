@@ -422,11 +422,14 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *_event)
 {
     switch(_event->key())
     {
-        case Qt::Key_Escape:
-            QGuiApplication::exit();
-            break;
-        default:
-            break;
+    case Qt::Key_Escape:
+        QGuiApplication::exit();
+    break;
+    case Qt::Key_S:
+        saveImage();
+    break;
+    default:
+    break;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -453,16 +456,16 @@ void OpenGLWidget::saveImage()
 
     int x;
     int y;
-    int h = m_width * m_height;
-    for(unsigned int i=0; i<m_renderer->getWidth()*m_renderer->getHeight(); i++)
+    int h = m_renderer->getWidth()*m_renderer->getHeight();
+    for(unsigned int i=0; i<h; i++)
     {
         float red = rgb_data[h-i].r; if(red>1.0) red=1.0;
         float green = rgb_data[h-i].g; if(green>1.0) green=1.0;
         float blue = rgb_data[h-i].b; if(blue>1.0) blue=1.0;
         float alpha = rgb_data[h-i].a; if(alpha>1.0) alpha=1.0;
         color.setRgbF(red,green,blue,alpha);
-        y = floor((float)i/m_width);
-        x = m_width - i + y*m_width - 1;
+        y = floor((float)i/m_renderer->getWidth());
+        x = m_renderer->getWidth() - i + y*m_renderer->getWidth() - 1;
         img.setPixel(x, y, color.rgb());
 
     }

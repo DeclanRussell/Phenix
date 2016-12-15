@@ -23,3 +23,7 @@ is metaphorically burning this old ugly code and rising majestically from its as
 7. OSD?!?!
 
 Have any ideas? Feel free to submit a pull request or send me over an email.
+
+<p align="center">
+  <img src="https://github.com/DeclanRussell/Phenix/blob/master/images/testRender.png" alt="testRender"/>
+</p>
