@@ -80,13 +80,43 @@ void AbstractOptixGeometry::createIntersectionProgram(std::string &_name)
     }
     if(_name.empty())
     {
-        std::cerr<<"No Bounding box name set. Cannot create intersection program!"<<std::endl;
+        std::cerr<<"No Intersection program name set. Cannot create intersection program!"<<std::endl;
         return;
     }
 
     // If we have made it this far we're in good form. Lets hope it doesn't go wrong here!
     m_intersectionProgram= getContext()->createProgramFromPTXFile(getPtxPath(),_name);
     m_geometry->setIntersectionProgram(m_intersectionProgram);
+
+    std::cerr<<"Intersection program "<<_name<<" created"<<std::endl;
+
+}
+
+void AbstractOptixGeometry::createIntersectionProgram(const char *_name)
+{
+    // some error handling
+    if(!contextSet())
+    {
+        std::cerr<<"No context set. Cannot create intersection program!"<<std::endl;
+        return;
+    }
+    if(!ptxPathSet())
+    {
+        std::cerr<<"No ptx path set. Cannot create intersection program!"<<std::endl;
+        return;
+    }
+    if(!_name)
+    {
+        std::cerr<<"No Intersection program name set. Cannot create intersection program!"<<std::endl;
+        return;
+    }
+
+    // If we have made it this far we're in good form. Lets hope it doesn't go wrong here!
+    m_intersectionProgram= getContext()->createProgramFromPTXFile(getPtxPath(),_name);
+    m_geometry->setIntersectionProgram(m_intersectionProgram);
+
+    std::cerr<<"Intersection program "<<_name<<" created"<<std::endl;
+
 }
 //----------------------------------------------------------------------------------------------------------------------
 void AbstractOptixGeometry::setIntersectionProgram(optix::Program &_p)
@@ -117,6 +147,36 @@ void AbstractOptixGeometry::createBBProgram(std::string &_name)
     // If we have made it this far we're in good form. Lets hope it doesn't go wrong here!
     m_BBProgram = getContext()->createProgramFromPTXFile(getPtxPath(),_name);
     m_geometry->setBoundingBoxProgram(m_BBProgram);
+
+    std::cerr<<"Bounding box program "<<_name<<" created"<<std::endl;
+
+}
+//----------------------------------------------------------------------------------------------------------------------
+void AbstractOptixGeometry::createBBProgram(const char *_name)
+{
+    // some error handling
+    if(!contextSet())
+    {
+        std::cerr<<"No context set. Cannot create bounding box program!"<<std::endl;
+        return;
+    }
+    if(!ptxPathSet())
+    {
+        std::cerr<<"No ptx path set. Cannot create bounding box program!"<<std::endl;
+        return;
+    }
+    if(!_name)
+    {
+        std::cerr<<"No Bounding box name set. Cannot create bounding box program!"<<std::endl;
+        return;
+    }
+
+    // If we have made it this far we're in good form. Lets hope it doesn't go wrong here!
+    m_BBProgram = getContext()->createProgramFromPTXFile(getPtxPath(),_name);
+    m_geometry->setBoundingBoxProgram(m_BBProgram);
+
+    std::cerr<<"Bounding box program "<<_name<<" created"<<std::endl;
+
 }
 //----------------------------------------------------------------------------------------------------------------------
 void AbstractOptixGeometry::setBBProgram(optix::Program &_p)

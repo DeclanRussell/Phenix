@@ -1,4 +1,4 @@
-#include "renderer/PathTracer.h"
+#include "renderer/PathTraceCamera.h"
 
 PathTraceCamera::PathTraceCamera()
 {

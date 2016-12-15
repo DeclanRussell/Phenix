@@ -16,7 +16,6 @@ SOURCES += \
     #src/common/HDRLoader.cpp \
     src/ui/mainwindow.cpp \
     src/ui/OpenGLWidget.cpp \
-    #src/geometry/OptixModel.cpp \
     src/renderer/PathTraceCamera.cpp \
     src/gl/Shader.cpp \
     src/gl/ShaderProgram.cpp \
@@ -30,7 +29,8 @@ SOURCES += \
     src/geometry/Parallelogram.cpp \
     src/geometry/Sphere.cpp \
     src/renderer/PathTracer.cpp \
-    src/renderer/AbstractOptixRenderer.cpp
+    src/renderer/AbstractOptixRenderer.cpp \
+    src/geometry/Mesh.cpp
     #src/lights/Light.cpp \
     #src/lights/LightManager.cpp
 
@@ -41,7 +41,6 @@ HEADERS += \
     #include/common/HDRLoader.h \
     include/ui/mainwindow.h \
     include/ui/OpenGLWidget.h \
-    #include/geometry/OptixModel.h \
     include/renderer/PathTraceCamera.h \
     include/common/random.h \
     include/gl/Shader.h \
@@ -60,7 +59,8 @@ HEADERS += \
     include/geometry/Sphere.h \
     include/lights/ParallelogramLight.h \
     include/renderer/PathTracer.h \
-    include/renderer/AbstractOptixRenderer.h
+    include/renderer/AbstractOptixRenderer.h \
+    include/geometry/Mesh.h
 
 
 INCLUDEPATH +=./include

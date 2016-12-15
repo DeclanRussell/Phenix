@@ -9,17 +9,6 @@
 #include "geometry/Parallelogram.h"
 #include "geometry/Sphere.h"
 
-//Declare our static instance variable
-PathTracerScene* PathTracerScene::m_instance;
-
-//----------------------------------------------------------------------------------------------------------------------
-PathTracerScene* PathTracerScene::getInstance(){
-    if(!m_instance){
-        m_instance = new PathTracerScene();
-    }
-    return m_instance;
-}
-
 //----------------------------------------------------------------------------------------------------------------------
 PathTracerScene::PathTracerScene()  : AbstractOptixRenderer(),
                                     m_totalNumPolygons(0),
@@ -35,7 +24,7 @@ PathTracerScene::PathTracerScene()  : AbstractOptixRenderer(),
 PathTracerScene::~PathTracerScene()
 {
     delete m_camera;
-
+    delete m_testMesh;
     //m_enviSampler->destroy();
 }
 
@@ -52,7 +41,7 @@ void PathTracerScene::initialize()
     // sets the stack size important for recursion
     // we want this to be as big as our hardware will allow us
     // so that we can send as many rays as the user desires
-    context->setStackSize( 4000 );
+    context->setStackSize( 1000 );
     // set some variables
     context["scene_epsilon"]->setFloat( 1.e-3f );
     // set our ray types
@@ -62,6 +51,8 @@ void PathTracerScene::initialize()
 
     // Enable printing on the GPU
     rtContextSetPrintEnabled(context->get(), 1);
+    rtContextSetPrintBufferSize(context->get(), 40096);
+    rtContextSetExceptionEnabled(context->get(), RT_EXCEPTION_ALL, 1);
 
     // create our output buffer and set it in our engine
     optix::Variable output_buffer = context["output_buffer"];
@@ -140,6 +131,9 @@ void PathTracerScene::initialize()
     // Finalize
     context->validate();
     context->compile();
+
+    // Just some test geometry for now
+    loadTestGeomtry();
 }
 //----------------------------------------------------------------------------------------------------------------------
 void PathTracerScene::trace()
@@ -188,55 +182,10 @@ void PathTracerScene::updateCamera()
     m_cameraChanged = false;
 }
 //----------------------------------------------------------------------------------------------------------------------
-QImage PathTracerScene::saveImage()
+void PathTracerScene::setTransform(float* _trans, float* _invTrans, bool _transpose)
 {
-    QImage img(m_width,m_height,QImage::Format_RGB32);
-    QColor color;
-    // as we're using a openGL buffer rather than optix we must map it with openGL calls
-    GLint vboId = m_outputBuffer->getGLBOId();
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    void* data = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-    typedef struct { float r; float g; float b; float a;} rgb;
-    rgb* rgb_data = (rgb*)data;
-
-    int x;
-    int y;
-    int h = m_width * m_height;
-    for(unsigned int i=0; i<m_width*m_height; i++)
-    {
-        float red = rgb_data[h-i].r; if(red>1.0) red=1.0;
-        float green = rgb_data[h-i].g; if(green>1.0) green=1.0;
-        float blue = rgb_data[h-i].b; if(blue>1.0) blue=1.0;
-        float alpha = rgb_data[h-i].a; if(alpha>1.0) alpha=1.0;
-        color.setRgbF(red,green,blue,alpha);
-        y = floor((float)i/m_width);
-        x = m_width - i + y*m_width - 1;
-        img.setPixel(x, y, color.rgb());
-
-    }
-    //remember to unmap the buffer after or you're going to have a bad time!
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    return img;
-}
-//----------------------------------------------------------------------------------------------------------------------
-void PathTracerScene::setGlobalTrans(glm::mat4 _trans)
-{
-    // identity matrix to init our transformation
-    float m[16];
-    m[ 0] = _trans[0][0];  m[ 1] = _trans[1][0];  m[ 2] = _trans[2][0];  m[ 3] = _trans[3][0];
-    m[ 4] = _trans[0][1];  m[ 5] = _trans[1][1];  m[ 6] = _trans[2][1];  m[ 7] = _trans[3][1];
-    m[ 8] = _trans[0][2];  m[ 9] = _trans[1][2];  m[ 10] = _trans[2][2];  m[ 11] = _trans[3][2];
-    m[ 12] = _trans[0][3];  m[ 13] = _trans[1][3];  m[ 14] = _trans[2][3];  m[ 15] = _trans[3][3];
-    // create our inverse transform
-    float invM[16];
-    glm::mat4 inv = glm::inverse(_trans);
-    invM[ 0] = inv[0][0];  invM[ 1] = inv[1][0];  invM[ 2] = inv[2][0];  invM[ 3] = inv[3][0];
-    invM[ 4] = inv[0][1];  invM[ 5] = inv[1][1];  invM[ 6] = inv[2][1];  invM[ 7] = inv[3][1];
-    invM[ 8] = inv[0][2];  invM[ 9] = inv[1][2];  invM[ 10] = inv[2][2];  invM[ 11] = inv[3][2];
-    invM[ 12] = inv[0][3];  invM[ 13] = inv[1][3];  invM[ 14] = inv[2][3];  invM[ 15] = inv[3][3];
     // set our transform
-    m_globalTrans->setMatrix(false,m,invM);
+    m_globalTrans->setMatrix(_transpose,_trans,_invTrans);
 
     //update our scene
     cleanTopAcceleration();
@@ -281,8 +230,8 @@ void PathTracerScene::loadTestGeomtry()
 {
     // Light buffer
     ParallelogramLight light;
-    light.corner   = optix::make_float3( 343.0f, 548.6f, 227.0f);
-    light.v1       = optix::make_float3( -130.0f, 0.0f, 0.0f);
+    light.corner   = optix::make_float3( 418.0f, 548.6f, 152.0f);
+    light.v1       = optix::make_float3( -260.0f, 0.0f, 0.0f);
     light.v2       = optix::make_float3( 0.0f, 0.0f, 105.0f);
     light.normal   = normalize( cross(light.v1, light.v2) );
     light.emission = optix::make_float3( 15.0f, 15.0f, 15.0f );
@@ -313,9 +262,6 @@ void PathTracerScene::loadTestGeomtry()
     optix::Program diffuse_em = context->createProgramFromPTXFile( ptx_path, "diffuseEmitter" );
     diffuse_light->setClosestHitProgram( 0, diffuse_em );
 
-
-    // create geometry instances
-    std::vector<optix::GeometryInstance> gis;
 
     const float3 white = optix::make_float3( 0.9f, 0.9f, 0.9f );
     const float3 green = optix::make_float3( 0.05f, 0.8f, 0.05f );
@@ -368,29 +314,38 @@ void PathTracerScene::loadTestGeomtry()
     Left.getGeometryInstance()["diffuse_color"]->setFloat(red);
     m_globalTransGroup->addChild(Left.getGeomAndTrans());
 
-    // Sphere
-    Sphere s(getContext());
-    s.setScale(100.f,100.f,100.f);
-    s.setPos(200.0f,100.f,559.2f/4.f);
-    s.setMaterial(diffuse);
-    s.getGeometryInstance()["diffuse_color"]->setFloat(red);
-    m_globalTransGroup->addChild(s.getGeomAndTrans());
+//    // Sphere
+//    Sphere s(getContext());
+//    s.setScale(100.f,100.f,100.f);
+//    s.setPos(200.0f,100.f,559.2f/4.f);
+//    s.setMaterial(diffuse);
+//    s.getGeometryInstance()["diffuse_color"]->setFloat(red);
+//    m_globalTransGroup->addChild(s.getGeomAndTrans());
 
-    Sphere s2(getContext());
-    s2.setScale(150.f,150.f,150.f);
-    s2.setPos((2.5f*559.2f)/4.f,150.f,(3.f*559.2f)/4.f);
-    s2.setMaterial(reflection);
-    s2.getGeometryInstance()["diffuse_color"]->setFloat(white);
-    m_globalTransGroup->addChild(s2.getGeomAndTrans());
+//    Sphere s2(getContext());
+//    s2.setScale(150.f,150.f,150.f);
+//    s2.setPos((2.5f*559.2f)/4.f,150.f,(3.f*559.2f)/4.f);
+//    s2.setMaterial(reflection);
+//    s2.getGeometryInstance()["diffuse_color"]->setFloat(white);
+//    m_globalTransGroup->addChild(s2.getGeomAndTrans());
 
 
     // Light
     Parallelogram l(getContext());
-    l.setScale(130.0f,1.f,105.0f);
+    l.setScale(260.0f,1.f,210.0f);
     l.setPos(556.f/2.f,548.6f,559.2f/2.f);
     l.setMaterial(diffuse_light);
     l.getGeometryInstance()["emission_color"]->setFloat(light_em);
     m_globalTransGroup->addChild(l.getGeomAndTrans());
+
+    m_testMesh = new Mesh(getContext());
+    m_testMesh->importGeometry("models/killeroo.obj");
+    m_testMesh->setPos(556.f/2.f,0.f,559.2f/3.f);
+    m_testMesh->setScale(15.f,15.f,15.f);
+    m_testMesh->setMaterial(diffuse);
+    m_testMesh->getGeometryInstance()["diffuse_color"]->setFloat(white);
+    m_globalTransGroup->addChild(m_testMesh->getGeomAndTrans());
+
 
     // Mark our acceleration dirty so it rebuilds
     m_globalTransGroup->getAcceleration()->markDirty();

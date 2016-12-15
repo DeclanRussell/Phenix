@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QGridLayout>
+#include "renderer/PathTracer.h"
 #include "ui/OpenGLWidget.h"
 
 class MainWindow : public QMainWindow
@@ -16,6 +17,7 @@ public:
 private:
     OpenGLWidget *m_openGLWidget;
     QGridLayout *m_gridLayout;
+    PathTracerScene *m_pathTracer;
 
 
 

@@ -11,7 +11,6 @@ int main(int argc, char **argv)
     QPixmap loadingPicture("./images/phenix_red.png");
     QSplashScreen loadingScreen(loadingPicture.scaled(400,400),Qt::WindowStaysOnTopHint);
     loadingScreen.show();
-    loadingScreen.showMessage("Phenix is rising!");
     loadingScreen.setMaximumSize(QSize(400,400));
 
     // Create our mainwindow

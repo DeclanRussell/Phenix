@@ -40,6 +40,13 @@ public:
     //----------------------------------------------------------------------------------------------------------------------
     virtual void trace();
     //----------------------------------------------------------------------------------------------------------------------
+    /// @brief sets a transformation to the scene. Normally global transformation to geometry.
+    /// @param _trans - transform matrix (float*)
+    /// @param _invTrans - inverse transform (float*)
+    /// @param _transpose - if you wish to transpose the matrixs (bool)
+    //----------------------------------------------------------------------------------------------------------------------
+    virtual void setTransform(float* _trans, float* _invTrans, bool _transpose){}
+    //----------------------------------------------------------------------------------------------------------------------
     /// @brief accessor to the optix context
     //----------------------------------------------------------------------------------------------------------------------
     inline optix::Context getContext(){return m_context;}
