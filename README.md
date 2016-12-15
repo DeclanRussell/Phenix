@@ -15,7 +15,7 @@ is metaphorically burning this old ugly code and rising majestically from its as
 
 ## TODO
 1. Inspector menu - to maintian a list of scene objects
-2. Importing of meshes
+2. ~~Importing of meshes~~
 3. Geomtry interface
 4. Better sampling than jitter
 5. More materials and material editor
