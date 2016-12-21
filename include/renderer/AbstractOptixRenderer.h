@@ -13,6 +13,7 @@
 #include <optix.h>
 #include <optixu/optixpp_namespace.h>
 #include <optixu/optixu_matrix_namespace.h>
+#include <geometry/AbstractOptixGeometry.h>
 
 class AbstractOptixRenderer
 {
@@ -46,6 +47,16 @@ public:
     /// @param _transpose - if you wish to transpose the matrixs (bool)
     //----------------------------------------------------------------------------------------------------------------------
     virtual void setTransform(float* _trans, float* _invTrans, bool _transpose){}
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief virtual function to add geometry to our scene.
+    /// @param _geo - geometry to add to our scene (AbstractOptixGeometry)
+    //----------------------------------------------------------------------------------------------------------------------
+    virtual void addGeometry(AbstractOptixGeometry *_geo){}
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief virtual function to remove geometry from our scene.
+    /// @param _geo - geometry to remove from our scene (AbstractOptixGeometry)
+    //----------------------------------------------------------------------------------------------------------------------
+    virtual void removeGeometry(AbstractOptixGeometry *_geo){}
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief accessor to the optix context
     //----------------------------------------------------------------------------------------------------------------------
@@ -109,6 +120,16 @@ public:
     //----------------------------------------------------------------------------------------------------------------------
     void setMissProgram(optix::Program &_missProg, unsigned int _entryPointIndex = 0);
     //----------------------------------------------------------------------------------------------------------------------
+    /// @brief sets the default material for any geometry created
+    /// @param _mat - default material (optix::Material)
+    //----------------------------------------------------------------------------------------------------------------------
+    inline void setDefaultMaterial(optix::Material _mat){m_defaultMat = _mat;}
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief accessor to the default material
+    /// @returns default material (optix::Material)
+    //----------------------------------------------------------------------------------------------------------------------
+    inline optix::Material getDefaultMaterial(){return m_defaultMat;}
+    //----------------------------------------------------------------------------------------------------------------------
 protected:
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief our output buffer
@@ -126,6 +147,10 @@ protected:
     /// @brief our device pixel ratio default set to 1 but for mac this could be different
     //----------------------------------------------------------------------------------------------------------------------
     int m_devicePixelRatio;
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief default material for any geometry created
+    //----------------------------------------------------------------------------------------------------------------------
+    optix::Material m_defaultMat;
     //----------------------------------------------------------------------------------------------------------------------
 private:
     //----------------------------------------------------------------------------------------------------------------------

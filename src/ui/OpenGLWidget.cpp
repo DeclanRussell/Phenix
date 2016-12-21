@@ -30,6 +30,7 @@ OpenGLWidget::OpenGLWidget(const QGLFormat _format, QWidget *_parent) : QGLWidge
     m_translateEnvironment = false;
     m_drawHud = true;
     m_renderer = 0;
+    m_render = true;
     // re-size the widget to that of the parent (in this case the GLFrame passed in on construction)
     this->resize(_parent->size());
 }
@@ -176,7 +177,10 @@ void OpenGLWidget::paintGL(){
     //if we haven't timed out then render another frame with our path tracer
     if(secsPassed<m_timedOut||m_timedOut==0){
         timedOut = false;
-        m_renderer->trace();
+        if(m_render)
+        {
+            m_renderer->trace();
+        }
     }
     else
     {
@@ -210,7 +214,7 @@ void OpenGLWidget::paintGL(){
         //calc the update time
         int msecsto = m_FPSTimer.msecsTo(updateTime);
         QString FPS;
-        (msecsto==0)?FPS = "FPS: Too fast to calculate" : FPS = QString("FPS: %1").arg(1000/msecsto);
+        (msecsto==0)?FPS = "FPS: Too fast to calculate" : FPS = QString("FPS: %1").arg(1000.f/(float)msecsto);
         int textIndent  = (width()-height())/2;
         if(textIndent<0) textIndent = 0;
         if(timedOut)
@@ -280,6 +284,7 @@ void OpenGLWidget::mouseMoveEvent (QMouseEvent *_event){
     invM[ 12] = inv[0][3];  invM[ 13] = inv[1][3];  invM[ 14] = inv[2][3];  invM[ 15] = inv[3][3];
 
     m_renderer->setTransform(m,invM,false);
+    m_render = true;
 
     m_origX = _event->x();
     m_origY = _event->y();
@@ -311,6 +316,7 @@ void OpenGLWidget::mouseMoveEvent (QMouseEvent *_event){
     invM[ 12] = inv[0][3];  invM[ 13] = inv[1][3];  invM[ 14] = inv[2][3];  invM[ 15] = inv[3][3];
 
     m_renderer->setTransform(m,invM,false);
+    m_render = true;
 
    }
   else if(m_translateEnvironment && _event->buttons() == Qt::MiddleButton){
@@ -335,6 +341,7 @@ void OpenGLWidget::mouseMoveEvent (QMouseEvent *_event){
       m_mouseGlobalTX[3][2] = m_modelPos.z;
       m_origX = _event->x();
       m_origY = _event->y();
+      m_render = true;
 
   }
 }
@@ -428,6 +435,9 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *_event)
     case Qt::Key_S:
         saveImage();
     break;
+    case Qt::Key_Space:
+        toggleRender();
+    break;
     default:
     break;
     }
@@ -445,6 +455,7 @@ void OpenGLWidget::keyReleaseEvent(QKeyEvent *_event)
 //----------------------------------------------------------------------------------------------------------------------
 void OpenGLWidget::saveImage()
 {
+    m_render = false;
     QImage img(m_renderer->getWidth(),m_renderer->getHeight(),QImage::Format_RGB32);
     QColor color;
     // as we're using a openGL buffer rather than optix we must map it with openGL calls
@@ -457,7 +468,7 @@ void OpenGLWidget::saveImage()
     int x;
     int y;
     int h = m_renderer->getWidth()*m_renderer->getHeight();
-    for(unsigned int i=0; i<h; i++)
+    for(int i=0; i<h; i++)
     {
         float red = rgb_data[h-i].r; if(red>1.0) red=1.0;
         float green = rgb_data[h-i].g; if(green>1.0) green=1.0;
@@ -474,9 +485,27 @@ void OpenGLWidget::saveImage()
 
     QFileDialog fileDialog(this);
     fileDialog.setDefaultSuffix(".png");
-    QString saveFile = fileDialog.getSaveFileName(this, tr("Save Image File"));
-
-    img.save(saveFile+QString(".png"), "PNG");
+    QString selectedType;
+    QString saveFile = fileDialog.getSaveFileName(this, tr("Save Image File"), "./images/",tr("PNG (*.png);;JPEG (*.jpeg);;BMP (*.bmp);;GIF (*.gif)"),&selectedType);
+    std::cout<<"Selected name filter is "<<selectedType.toStdString()<<std::endl;
+    QString format;
+    if(selectedType== "PNG (*.png)")
+    {
+        format = "PNG";
+    }
+    else if(selectedType== "JPEG (*.jpeg)")
+    {
+        format = "JPEG";
+    }
+    else if(selectedType== "BMP (*.bmp)")
+    {
+        format = "BMP";
+    }
+    else if(selectedType== "GIF (*.gif)")
+    {
+        format = "GIF";
+    }
+    img.save(saveFile, format.toStdString().c_str());
 }
 //----------------------------------------------------------------------------------------------------------------------
 void OpenGLWidget::resetGlobalTrans(){
@@ -487,5 +516,6 @@ void OpenGLWidget::resetGlobalTrans(){
     m[ 8] = 0.0f;  m[ 9] = 0.0f;  m[10] = 1.0f;  m[11] = 0.0f;
     m[12] = 0.0f;  m[13] = 0.0f;  m[14] = 0.0f;  m[15] = 1.0f;
     m_renderer->setTransform(m, m, false);
+    m_render = true;
 
 }

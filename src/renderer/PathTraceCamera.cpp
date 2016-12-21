@@ -20,8 +20,8 @@ void PathTraceCamera::calcVectors(float3 _eye, float3 _lookat, float3 _up, float
     float lookdir_len = optix::length(m_W);
     m_U = optix::normalize(optix::cross(m_W,_up));
     m_V = optix::normalize(optix::cross(m_U,m_W));
-    m_U*= lookdir_len * tanf(DtoR(_hfov*0.5f));
-    m_V*= lookdir_len * tanf(DtoR(_vfov*0.5f));
+    m_U*= lookdir_len * tanf(_hfov*0.5f*DtoR);
+    m_V*= lookdir_len * tanf(_vfov*0.5f*DtoR);
     m_hfov = _hfov;
     m_vfov = _vfov;
 }

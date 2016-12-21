@@ -89,7 +89,6 @@ void PathTracerScene::initialize()
     context["sqrt_num_samples"]->setUint(m_sqrt_num_samples );
     context["bad_color"]->setFloat( 233.f, 5.0f, 150.0f );
     context["bg_color"]->setFloat( optix::make_float3(0.f,0.f,0.f) );
-    const float3 default_color = optix::make_float3(1.0f, 1.0f, 1.0f);
     float m[16];
     m[ 0] = 1.0f;  m[ 1] = 0.0f;  m[ 2] = 0.0f;  m[ 3] = 0.0f;
     m[ 4] = 0.0f;  m[ 5] = 1.0f;  m[ 6] = 0.0f;  m[ 7] = 0.0f;
@@ -132,6 +131,15 @@ void PathTracerScene::initialize()
     context->validate();
     context->compile();
 
+    // Set our default material for any geomery we import
+    // Set up material
+    Material diffuse = context->createMaterial();
+    optix::Program diffuse_ch = context->createProgramFromPTXFile( ptx_path, "diffuse" );
+    optix::Program diffuse_ah = context->createProgramFromPTXFile( ptx_path, "shadow" );
+    diffuse->setClosestHitProgram( 0, diffuse_ch );
+    diffuse->setAnyHitProgram( 1, diffuse_ah );
+    setDefaultMaterial(diffuse);
+
     // Just some test geometry for now
     loadTestGeomtry();
 }
@@ -144,6 +152,28 @@ void PathTracerScene::trace()
     //launch it
     getContext()["frame_number"]->setUint( m_frame++ );
     getContext()->launch(0,m_width,m_height);
+}
+//----------------------------------------------------------------------------------------------------------------------
+void PathTracerScene::addGeometry(AbstractOptixGeometry *_geo)
+{
+    // Give it a default material so that optix doesnt crash
+    _geo->setMaterial(getDefaultMaterial());
+    // Add our geometry to our tree
+    m_globalTransGroup->addChild(_geo->getGeomAndTrans());
+    // Mark our acceleration dirty so it rebuilds
+    m_globalTransGroup->getAcceleration()->markDirty();
+    // Signal our render to start again
+    signalSceneChanged();
+}
+//----------------------------------------------------------------------------------------------------------------------
+void PathTracerScene::removeGeometry(AbstractOptixGeometry *_geo)
+{
+    // Remove our geometry to our tree
+    m_globalTransGroup->removeChild(_geo->getGeomAndTrans());
+    // Mark our acceleration dirty so it rebuilds
+    m_globalTransGroup->getAcceleration()->markDirty();
+    // Signal our render to start again
+    signalSceneChanged();
 }
 //----------------------------------------------------------------------------------------------------------------------
 void PathTracerScene::resize(unsigned int _width,unsigned int _height)

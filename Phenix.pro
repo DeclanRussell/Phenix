@@ -30,7 +30,9 @@ SOURCES += \
     src/geometry/Sphere.cpp \
     src/renderer/PathTracer.cpp \
     src/renderer/AbstractOptixRenderer.cpp \
-    src/geometry/Mesh.cpp
+    src/geometry/Mesh.cpp \
+    src/ui/InspectorMenu.cpp \
+    src/ui/OptixQListWidgetItem.cpp
     #src/lights/Light.cpp \
     #src/lights/LightManager.cpp
 
@@ -60,7 +62,9 @@ HEADERS += \
     include/lights/ParallelogramLight.h \
     include/renderer/PathTracer.h \
     include/renderer/AbstractOptixRenderer.h \
-    include/geometry/Mesh.h
+    include/geometry/Mesh.h \
+    include/ui/InspectorMenu.h \
+    include/ui/OptixQListWidgetItem.h
 
 
 INCLUDEPATH +=./include
@@ -131,11 +135,11 @@ message(CUDA sources are $$CUDA_SOURCES)
 # Path to cuda SDK install
 macx:CUDA_DIR = /Developer/NVIDIA/CUDA-6.5
 linux:CUDA_DIR = /usr/local/cuda-6.5
-win32:CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5"
+win32:CUDA_DIR = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v8.0"
 # Path to cuda toolkit install
 macx:CUDA_SDK = /Developer/NVIDIA/CUDA-6.5/samples
 linux:CUDA_SDK = /usr/local/cuda-6.5/samples
-win32:CUDA_SDK = "C:\ProgramData\NVIDIA Corporation\CUDA Samples\v7.5"
+win32:CUDA_SDK = "C:\ProgramData\NVIDIA Corporation\CUDA Samples\v8.0"
 
 # include paths
 macx:INCLUDEPATH += /Developer/OptiX/SDK/sutil
