@@ -105,12 +105,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent){
     connect(importMeshBtn,SIGNAL(triggered()),this,SLOT(importMesh()));
     geomMenu->addAction(importMeshBtn);
     menuBar()->addAction(geomMenu->menuAction());
-
-
 }
 
 MainWindow::~MainWindow(){
+    delete m_inspectorMenu;
+    m_inspectorMenu = 0;
     delete m_pathTracer;
+    m_pathTracer = 0;
 }
 
 void MainWindow::createSphere()

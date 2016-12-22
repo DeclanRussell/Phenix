@@ -32,7 +32,8 @@ SOURCES += \
     src/renderer/AbstractOptixRenderer.cpp \
     src/geometry/Mesh.cpp \
     src/ui/InspectorMenu.cpp \
-    src/ui/OptixQListWidgetItem.cpp
+    src/ui/OptixQListWidgetItem.cpp \
+    src/ui/GeometryAttribEditor.cpp
     #src/lights/Light.cpp \
     #src/lights/LightManager.cpp
 
@@ -64,7 +65,8 @@ HEADERS += \
     include/renderer/AbstractOptixRenderer.h \
     include/geometry/Mesh.h \
     include/ui/InspectorMenu.h \
-    include/ui/OptixQListWidgetItem.h
+    include/ui/OptixQListWidgetItem.h \
+    include/ui/GeometryAttribEditor.h
 
 
 INCLUDEPATH +=./include

@@ -21,9 +21,12 @@ InspectorMenu::InspectorMenu(AbstractOptixRenderer *_renderer, QWidget *_parent)
     m_gridLayout = new QGridLayout(this);
     this->setLayout(m_gridLayout);
 
+    m_geoAttribEditor = new GeometryAttribEditor(m_renderer,this);
+
     // Create our list widget
     m_sceneList = new QListWidget(this);
     m_gridLayout->addWidget(m_sceneList,0,0,4,3);
+    connect(m_sceneList,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(openAttribs(QListWidgetItem*)));
 
     QPushButton *renameItemBtn = new QPushButton("Rename",this);
     m_gridLayout->addWidget(renameItemBtn,4,1,1,1);
@@ -32,6 +35,7 @@ InspectorMenu::InspectorMenu(AbstractOptixRenderer *_renderer, QWidget *_parent)
     QPushButton *removeItemBtn = new QPushButton("Remove",this);
     m_gridLayout->addWidget(removeItemBtn,4,2,1,1);
     connect(removeItemBtn,SIGNAL(pressed()),this,SLOT(removeSelected()));
+
 
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -80,7 +84,7 @@ void InspectorMenu::removeItem(QListWidgetItem *_item)
 void InspectorMenu::addGeometry(AbstractOptixGeometry *_geo, QString _name)
 {
     // Add the item to our inspector list
-    m_sceneList->addItem(new OptixQListWidgetItem(_name,m_sceneList,OptixQListWidgetItem::Geometry,_geo));
+    m_sceneList->addItem(new OptixQListWidgetItem(QIcon("images/icons/teapot.png"),_name,m_sceneList,OptixQListWidgetItem::Geometry,_geo));
     // Add the geometry to our renderer
     m_renderer->addGeometry(_geo);
 }
@@ -114,6 +118,23 @@ void InspectorMenu::renameSelected()
         QString name = QInputDialog::getText(this,tittle, tr("New name"),QLineEdit::Normal,items[i]->text(),&ok);
         if(ok && !name.isEmpty())
             items[i]->setText(name);
+    }
+}
+//----------------------------------------------------------------------------------------------------------------------
+void InspectorMenu::openAttribs(QListWidgetItem *_item)
+{
+    AbstractOptixObject *data = ((OptixQListWidgetItem*)_item)->getData();
+    switch (_item->type()) {
+    case OptixQListWidgetItem::Geometry:
+    {
+        m_geoAttribEditor->setCurrentGeometry((AbstractOptixGeometry*)data);
+        m_geoAttribEditor->show();
+    }
+        break;
+    case OptixQListWidgetItem::Light: //Not yet implemented
+        break;
+    default:
+        break;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------

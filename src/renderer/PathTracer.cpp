@@ -158,6 +158,7 @@ void PathTracerScene::addGeometry(AbstractOptixGeometry *_geo)
 {
     // Give it a default material so that optix doesnt crash
     _geo->setMaterial(getDefaultMaterial());
+    _geo->getGeometryInstance()["diffuse_color"]->setFloat(optix::make_float3(1.f,1.f,1.f));
     // Add our geometry to our tree
     m_globalTransGroup->addChild(_geo->getGeomAndTrans());
     // Mark our acceleration dirty so it rebuilds
@@ -196,6 +197,14 @@ void PathTracerScene::resize(unsigned int _width,unsigned int _height)
     m_outputBuffer->registerGLBuffer();
 
     m_frame = 0;
+}
+//----------------------------------------------------------------------------------------------------------------------
+void PathTracerScene::rebuildScene()
+{
+    // Mark our acceleration dirty so it rebuilds
+    m_globalTransGroup->getAcceleration()->markDirty();
+    // Signal our render to start again
+    signalSceneChanged();
 }
 //----------------------------------------------------------------------------------------------------------------------
 void PathTracerScene::updateCamera()

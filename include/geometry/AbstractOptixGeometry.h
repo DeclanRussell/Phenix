@@ -2,6 +2,7 @@
 #define ABSTRACTOPTIXGEOMETRY_H
 
 #define DtoR (float)M_PI/180.f
+#define RtoD 180.f/(float)M_PI
 #include "common/AbstractOptixObject.h"
 #include <optixu/optixu_math_namespace.h>
 
@@ -77,17 +78,29 @@ public:
     //----------------------------------------------------------------------------------------------------------------------
     inline optix::GeometryInstance getGeometryInstance(){return m_geometryInstance;}
     //----------------------------------------------------------------------------------------------------------------------
-    /// @brief set the postion of our geometry
+    /// @brief set the position of our geometry
     //----------------------------------------------------------------------------------------------------------------------
     inline void setPos(float _x, float _y, float _z){m_pos = optix::make_float3(_x,_y,_z); applyTransforms();}
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief accessor the position of our geometry
+    //----------------------------------------------------------------------------------------------------------------------
+    inline void getPos(float &_x, float &_y, float &_z){_x = m_pos.x;_y = m_pos.y;_z = m_pos.z;}
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief set the rotation of our geometry
     //----------------------------------------------------------------------------------------------------------------------
     inline void setRot(float _x, float _y, float _z){m_rot = optix::make_float3(_x*DtoR,_y*DtoR,_z*DtoR); applyTransforms();}
     //----------------------------------------------------------------------------------------------------------------------
+    /// @brief accessor the rotation of our geometry
+    //----------------------------------------------------------------------------------------------------------------------
+    inline void getRot(float &_x, float &_y, float &_z){_x = m_rot.x*RtoD;_y = m_rot.y*RtoD;_z = m_rot.z*RtoD;}
+    //----------------------------------------------------------------------------------------------------------------------
     /// @brief set the scale of our geometry
     //----------------------------------------------------------------------------------------------------------------------
     inline void setScale(float _x, float _y, float _z){m_scale = optix::make_float3(_x,_y,_z); applyTransforms();}
+    //----------------------------------------------------------------------------------------------------------------------
+    /// @brief accessor the scale of our geometry
+    //----------------------------------------------------------------------------------------------------------------------
+    inline void getScale(float &_x, float &_y, float &_z){_x = m_scale.x;_y = m_scale.y;_z = m_scale.z;}
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief rebuilds the acceleration structure of our geometry group
     //----------------------------------------------------------------------------------------------------------------------
